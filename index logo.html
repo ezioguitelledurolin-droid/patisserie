@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tâches du jour</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;800&display=swap">
+<style>
+:root{
+  --bg:#F2F4F9; --card:#FFFFFF; --ink:#1B2233; --muted:#6B7488;
+  --accent:#3D5AFE; --accent-soft:#E6EAFF; --ok:#17A06B; --ok-soft:#DDF4EA; --bad:#D8404F; --line:#E3E7F0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#10131C; --card:#1A1F2D; --ink:#EDF0F7; --muted:#9099AE;
+    --accent:#8A9CFF; --accent-soft:#252C4A; --ok:#4CD39A; --ok-soft:#183A2E; --bad:#FF7A86; --line:#262C3C;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.app{max-width:440px;margin:0 auto;padding:20px 18px 40px}
+.hidden{display:none!important}
+h1{font-size:34px;line-height:1.1;font-weight:800;margin:0 0 4px;letter-spacing:-.02em}
+h2{font-size:17px;font-weight:800;margin:0 0 12px}
+.sub{color:var(--muted);font-size:15px;margin:0 0 20px}
+input{width:100%;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:14px 18px;font:inherit;font-size:16px}
+input:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{border:0;background:var(--accent);color:#fff;border-radius:999px;padding:14px 20px;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.btn.full{width:100%}
+.ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.stack{display:grid;gap:12px}
+.link{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;font-size:15px;cursor:pointer;padding:8px;justify-self:center}
+.msg{font-size:14px;text-align:center;min-height:20px;color:var(--bad)}
+.msg.ok{color:var(--ok)}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.who{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);font-weight:500}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.progress{display:flex;align-items:center;gap:16px;background:var(--accent);color:#fff;border-radius:28px;padding:18px 20px;margin-bottom:22px}
+.progress strong{display:block;font-size:19px;font-weight:800}
+.progress small{opacity:.9;font-size:14px}
+.ring{position:relative;width:64px;height:64px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:16px}
+.list{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:12px}
+.row{display:flex;align-items:center;gap:8px}
+.task{flex:1;min-width:0;display:flex;align-items:center;gap:14px;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:16px 18px;font:inherit;color:inherit;cursor:pointer;transition:background .2s}
+.box{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center}
+.box svg{width:16px;height:16px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.txt{flex:1;min-width:0}
+.txt b{display:block;font-weight:600;font-size:16px}
+.txt i{display:block;font-style:normal;font-size:13px;color:var(--muted);margin-top:2px}
+.task.done{background:var(--ok-soft);border-color:transparent}
+.task.done .box{background:var(--ok);border-color:var(--ok)}
+.task.done .box svg{opacity:1}
+.task.done .txt b{text-decoration:line-through;color:var(--muted)}
+.icon{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;cursor:pointer}
+.icon.del{color:var(--bad)}
+.icon svg{width:18px;height:18px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.empty{background:var(--card);border:1.5px dashed var(--line);border-radius:22px;padding:22px;text-align:center;color:var(--muted);font-size:14px}
+.add{display:flex;gap:10px;margin-bottom:12px}
+.add .btn{padding:0 20px}
+.reset{width:100%;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:14px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;margin-top:6px}
+.admin{border-top:1.5px solid var(--line);padding-top:22px;margin-top:8px}
+.logo{display:block;border-radius:26px;background:#FEF6EB}
+.logo.big{width:min(200px,56vw);height:auto;margin:8px auto 22px}
+.logo.small{width:48px;height:48px;border-radius:14px;flex:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+
+  <!-- Connexion -->
+  <section id="authView">
+    <img class="logo big" data-logo alt="Ô Délices d’Esmée">
+    <h1 id="authTitle">Connexion</h1>
+    <p class="sub">Tâches du jour de la pâtisserie</p>
+    <form id="authForm" class="stack">
+      <input id="name" class="hidden" type="text" placeholder="Prénom" autocomplete="given-name">
+      <input id="email" type="email" placeholder="E-mail" autocomplete="email" required>
+      <input id="pass" type="password" placeholder="Mot de passe (6 caractères minimum)" autocomplete="current-password" required minlength="6">
+      <button class="btn full" id="authBtn" type="submit">Se connecter</button>
+      <div class="msg" id="authMsg" role="status"></div>
+      <button class="link" id="switch" type="button">Pas encore de compte ? Créer mon compte</button>
+    </form>
+  </section>
+
+  <!-- Application -->
+  <section id="appView" class="hidden">
+    <div class="top">
+      <div class="who"><img class="logo small" data-logo alt="Ô Délices d’Esmée"><div class="avatar hidden" id="avatar">?</div><span id="whoTxt"></span></div>
+      <button class="ghost" id="out" type="button">Se déconnecter</button>
+    </div>
+    <h1>Tâches du jour</h1>
+    <p class="sub" id="dateTxt"></p>
+
+    <section class="progress" aria-live="polite">
+      <div class="ring">
+        <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="8"/>
+          <circle id="arc" cx="32" cy="32" r="27" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="169.6" style="transition:stroke-dashoffset .4s"/>
+        </svg>
+        <span id="pct">0%</span>
+      </div>
+      <div><strong id="count"></strong><small id="left"></small></div>
+    </section>
+
+    <div class="msg" id="appMsg" role="status"></div>
+    <ul class="list" id="list"></ul>
+
+    <section class="admin hidden" id="adminBox">
+      <h2>Administration</h2>
+      <form class="add" id="addForm">
+        <input id="newTask" type="text" placeholder="Nouvelle tâche" aria-label="Nouvelle tâche" autocomplete="off">
+        <button class="btn" type="submit">Ajouter</button>
+      </form>
+      <button class="reset" id="clearDay" type="button">Vider la liste du jour</button>
+    </section>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+var LOGO="IMG_9936.jpeg";
+document.querySelectorAll("[data-logo]").forEach(function(i){i.src=LOGO});
+var sb = supabase.createClient("https://uifditsfbbnhxgnktiom.supabase.co","sb_publishable_5J-IdY13swP39ZrnPMeVSw_Ksldm7QH");
+var $ = function(id){return document.getElementById(id)};
+var C = 2*Math.PI*27;
+var state = {user:null, profile:null, tasks:[], timer:null, signup:false};
+var pencil='<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+var bin='<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
+var check='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function say(el,text,ok){el.textContent=text||"";el.className="msg"+(ok?" ok":"");}
+function nice(err){
+  var m=(err&&err.message)||"";
+  if(/Invalid login/i.test(m))return "E-mail ou mot de passe incorrect.";
+  if(/already registered/i.test(m))return "Cet e-mail a déjà un compte. Connectez-vous.";
+  if(/at least 6/i.test(m))return "Le mot de passe doit faire au moins 6 caractères.";
+  if(/valid email|invalid format/i.test(m))return "Cet e-mail n’est pas valide.";
+  if(/rate limit/i.test(m))return "Trop d’essais. Réessayez dans quelques minutes.";
+  return m||"Une erreur est survenue. Réessayez.";
+}
+
+/* Connexion / création de compte */
+function setMode(signup){
+  state.signup=signup;
+  $("name").classList.toggle("hidden",!signup);
+  $("name").required=signup;
+  $("authTitle").textContent=signup?"Créer mon compte":"Connexion";
+  $("authBtn").textContent=signup?"Créer mon compte":"Se connecter";
+  $("switch").textContent=signup?"J’ai déjà un compte. Me connecter":"Pas encore de compte ? Créer mon compte";
+  $("pass").autocomplete=signup?"new-password":"current-password";
+  say($("authMsg"),"");
+}
+$("switch").addEventListener("click",function(){setMode(!state.signup)});
+$("authForm").addEventListener("submit",async function(ev){
+  ev.preventDefault();
+  var email=$("email").value.trim(), pass=$("pass").value, name=$("name").value.trim();
+  $("authBtn").disabled=true; say($("authMsg"),"");
+  var r;
+  if(state.signup){
+    r=await sb.auth.signUp({email:email,password:pass,options:{data:{name:name}}});
+    if(!r.error&&!r.data.session){say($("authMsg"),"Compte créé. Confirmez votre e-mail, puis connectez-vous.",true);}
+  }else{
+    r=await sb.auth.signInWithPassword({email:email,password:pass});
+  }
+  if(r.error)say($("authMsg"),nice(r.error));
+  $("authBtn").disabled=false;
+});
+$("out").addEventListener("click",function(){sb.auth.signOut();});
+
+/* Profil */
+async function loadProfile(user){
+  var r=await sb.from("profiles").select("name,is_admin").eq("id",user.id).maybeSingle();
+  if(r.data)return r.data;
+  var nm=(user.user_metadata&&user.user_metadata.name)||(user.email||"").split("@")[0]||"Employé";
+  await sb.from("profiles").insert({id:user.id,name:nm});
+  r=await sb.from("profiles").select("name,is_admin").eq("id",user.id).maybeSingle();
+  return r.data||{name:nm,is_admin:false};
+}
+
+/* Tâches */
+async function loadTasks(){
+  var r=await sb.from("tasks").select("*").eq("day",today()).order("id");
+  if(r.error){say($("appMsg"),"Impossible de charger les tâches. Vérifiez votre connexion.");return;}
+  say($("appMsg"),"");
+  state.tasks=r.data||[];
+  render();
+}
+function render(){
+  var list=$("list"), admin=state.profile&&state.profile.is_admin;
+  list.innerHTML="";
+  if(!state.tasks.length){
+    var e=document.createElement("li");e.className="empty";
+    e.textContent=admin?"Aucune tâche aujourd’hui. Ajoutez la première ci-dessous.":"Aucune tâche aujourd’hui. Revenez plus tard.";
+    list.appendChild(e);
+  }
+  state.tasks.forEach(function(k){
+    var li=document.createElement("li");li.className="row";
+    var b=document.createElement("button");
+    b.type="button";b.className="task"+(k.done?" done":"");
+    b.setAttribute("aria-pressed",k.done?"true":"false");
+    b.innerHTML='<span class="box">'+check+'</span><span class="txt"><b></b><i></i></span>';
+    b.querySelector("b").textContent=k.title;
+    var sub="À faire";
+    if(k.done){
+      var h=k.done_at?new Date(k.done_at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
+      sub="Fait par "+(k.done_by_name||"un collègue")+(h?", "+h:"");
+    }
+    b.querySelector("i").textContent=sub;
+    b.addEventListener("click",async function(){
+      var r=await sb.rpc("toggle_task",{task_id:k.id,new_done:!k.done});
+      if(r.error)say($("appMsg"),"Action impossible. Réessayez.");
+      loadTasks();
+    });
+    li.appendChild(b);
+    if(admin){
+      var ed=document.createElement("button");ed.type="button";ed.className="icon";ed.setAttribute("aria-label","Modifier");ed.innerHTML=pencil;
+      ed.addEventListener("click",async function(){
+        var v=prompt("Modifier la tâche",k.title);
+        if(v&&v.trim()){await sb.from("tasks").update({title:v.trim()}).eq("id",k.id);loadTasks();}
+      });
+      var dl=document.createElement("button");dl.type="button";dl.className="icon del";dl.setAttribute("aria-label","Supprimer");dl.innerHTML=bin;
+      dl.addEventListener("click",async function(){
+        if(confirm("Supprimer cette tâche ?")){await sb.from("tasks").delete().eq("id",k.id);loadTasks();}
+      });
+      li.appendChild(ed);li.appendChild(dl);
+    }
+    list.appendChild(li);
+  });
+  var n=state.tasks.filter(function(k){return k.done}).length,total=state.tasks.length,r=total-n;
+  $("count").textContent=n+" sur "+total+" faites";
+  $("left").textContent=total===0?"Pas de tâche pour le moment":(r===0?"Tout est terminé, bravo l’équipe !":r+(r>1?" restantes":" restante")+" pour l’équipe");
+  $("pct").textContent=(total?Math.round(n/total*100):0)+"%";
+  $("arc").style.strokeDashoffset=C*(1-(total?n/total:0));
+}
+
+/* Admin */
+$("addForm").addEventListener("submit",async function(ev){
+  ev.preventDefault();
+  var v=$("newTask").value.trim();if(!v)return;
+  var r=await sb.from("tasks").insert({title:v,day:today()});
+  if(r.error){say($("appMsg"),"Ajout impossible. Vérifiez que votre compte est administrateur.");return;}
+  $("newTask").value="";loadTasks();
+});
+$("clearDay").addEventListener("click",async function(){
+  if(!confirm("Supprimer toutes les tâches d’aujourd’hui ?"))return;
+  await sb.from("tasks").delete().eq("day",today());loadTasks();
+});
+
+/* Démarrage */
+async function boot(session){
+  clearInterval(state.timer);
+  if(!session){
+    state.user=null;state.profile=null;
+    $("appView").classList.add("hidden");$("authView").classList.remove("hidden");
+    return;
+  }
+  state.user=session.user;
+  state.profile=await loadProfile(session.user);
+  $("avatar").textContent=(state.profile.name||"?").charAt(0).toUpperCase();
+  $("whoTxt").textContent=(state.profile.is_admin?"Administrateur : ":"")+state.profile.name;
+  var d=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  $("dateTxt").textContent=d.charAt(0).toUpperCase()+d.slice(1);
+  $("adminBox").classList.toggle("hidden",!state.profile.is_admin);
+  $("authView").classList.add("hidden");$("appView").classList.remove("hidden");
+  await loadTasks();
+  state.timer=setInterval(loadTasks,15000);
+}
+sb.auth.onAuthStateChange(function(ev,session){
+  if(ev==="INITIAL_SESSION"||ev==="SIGNED_IN"||ev==="SIGNED_OUT"){setTimeout(function(){boot(session)},0);}
+});
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&state.user)loadTasks();});
+</script>
+</body>
+</html>
